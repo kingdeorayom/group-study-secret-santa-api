@@ -1,36 +1,50 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+
     name: {
         type: String,
         required: true,
+        minlength: 2,
     },
-    // email: {
-    //     type: String,
-    //     required: true,
-    //     unique: true,
-    //     lowercase: true,
-    // },
+
     password: {
         type: String,
         required: true,
+        minlength: 8,
     },
+
     codeName: {
         type: String,
         required: true,
         unique: true,
+        minlength: 4,
     },
-    isPaired: {
+
+    isPicked: {
         type: Boolean,
-        default: false, // Default value is false, indicating the user is not initially paired.
+        default: false,
     },
+
+    hasPicked: {
+        type: Boolean,
+        default: false,
+    },
+
+    recipient: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+
     wishlists: [
         {
-            item: String,
-            priority: Number,
-            // You can add more fields to the wishlist item as needed.
+            id: mongoose.Schema.Types.ObjectId,
+            title: String,
+            priority: String,
+            links: [String],
         },
     ],
+
 });
 
-module.exports = mongoose.model('User', userSchema)
+module.exports = mongoose.model('User', userSchema);
