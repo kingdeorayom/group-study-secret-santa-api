@@ -26,7 +26,7 @@ function authenticateToken(req, res, next) {
 }
 
 // Get all users
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const users = await User.find();
         res.status(200).json(users);
