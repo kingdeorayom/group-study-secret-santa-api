@@ -179,7 +179,8 @@ router.post('/pick/:userId', async (req, res) => {
                     name: recipient.name,
                     codeName: recipient.codeName,
                     isPicked: recipient.isPicked,
-                    hasPicked: recipient.hasPicked
+                    hasPicked: recipient.hasPicked,
+                    wishlists: recipient.wishlists
                 }
             });
 
@@ -211,7 +212,8 @@ router.post('/pick/:userId', async (req, res) => {
                     name: recipient.name,
                     codeName: recipient.codeName,
                     isPicked: recipient.isPicked,
-                    hasPicked: recipient.hasPicked
+                    hasPicked: recipient.hasPicked,
+                    wishlists: recipient.wishlists
                 }
             });
 
