@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt')
+const crypto = require('crypto');
 
 const User = require('../models/user'); // Your user model
 
@@ -162,11 +163,15 @@ router.post('/pick/:userId', async (req, res) => {
             picker.recipient = recipient._id;
             await picker.save();
 
+            // Decrypt the real name when including it in the response
+            const decryptedPickerName = decrypt(picker.name, 'encryptionKey');
+            const decryptedRecipientName = decrypt(recipient.name, 'encryptionKey');
+
             res.json({
                 message: `You've picked a participant: ${recipient.codeName}`,
                 pickerDetails: {
                     userId: picker._id,
-                    name: picker.name,
+                    name: decryptedPickerName,
                     codeName: picker.codeName,
                     isPicked: picker.isPicked,
                     hasPicked: picker.hasPicked,
@@ -176,7 +181,7 @@ router.post('/pick/:userId', async (req, res) => {
                 },
                 recipientDetails: {
                     userId: recipient._id,
-                    name: recipient.name,
+                    name: decryptedRecipientName,
                     codeName: recipient.codeName,
                     isPicked: recipient.isPicked,
                     hasPicked: recipient.hasPicked,
@@ -195,11 +200,15 @@ router.post('/pick/:userId', async (req, res) => {
             picker.recipient = recipient._id;
             await picker.save();
 
+            // Decrypt the real name when including it in the response
+            const decryptedPickerName = decrypt(picker.name, 'encryptionKey');
+            const decryptedRecipientName = decrypt(recipient.name, 'encryptionKey');
+
             res.json({
                 message: `You've picked a participant: ${recipient.codeName}`,
                 pickerDetails: {
                     userId: picker._id,
-                    name: picker.name,
+                    name: decryptedPickerName,
                     codeName: picker.codeName,
                     isPicked: picker.isPicked,
                     hasPicked: picker.hasPicked,
@@ -209,7 +218,7 @@ router.post('/pick/:userId', async (req, res) => {
                 },
                 recipientDetails: {
                     userId: recipient._id,
-                    name: recipient.name,
+                    name: decryptedRecipientName,
                     codeName: recipient.codeName,
                     isPicked: recipient.isPicked,
                     hasPicked: recipient.hasPicked,
@@ -242,20 +251,26 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Code name already in use. Please choose a different one.' });
         }
 
+        // Encrypt the real name before saving it to the database
+        const encryptedName = encrypt(name, 'encryptionKey');
+
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create a new user without the wishlists field
-        const user = new User({ name, codeName, password: hashedPassword, isPicked });
+        const user = new User({ name: encryptedName, codeName, password: hashedPassword, isPicked });
         await user.save();
 
         // Create a JWT token
         const token = jwt.sign({ userId: user._id }, 'secretsanta');
 
+        // Decrypt the real name when including it in the response
+        const decryptedName = decrypt(encryptedName, 'encryptionKey');
+
         // Include user details in the response
         const userResponse = {
             userId: user._id,
-            name: user.name,
+            name: decryptedName,
             codeName: user.codeName,
             isPicked: user.isPicked,
             hasPicked: user.hasPicked,
@@ -292,10 +307,13 @@ router.post('/login', async (req, res) => {
         // Create a JWT token
         const token = jwt.sign({ userId: user._id }, 'secretsanta');
 
+        // Decrypt the real name when including it in the response
+        const decryptedName = decrypt(user.name, 'encryptionKey');
+
         // Include user details in the response
         const userResponse = {
             userId: user._id,
-            name: user.name,
+            name: decryptedName,
             codeName: user.codeName,
             isPicked: user.isPicked,
             hasPicked: user.hasPicked,
@@ -310,6 +328,21 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Encryption function
+const encrypt = (text, key) => {
+    const cipher = crypto.createCipher('aes-256-cbc', key);
+    let encrypted = cipher.update(text, 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+};
+
+// Decryption function
+const decrypt = (encryptedText, key) => {
+    const decipher = crypto.createDecipher('aes-256-cbc', key);
+    let decrypted = decipher.update(encryptedText, 'hex', 'utf-8');
+    decrypted += decipher.final('utf-8');
+    return decrypted;
+};
 
 
 module.exports = router
