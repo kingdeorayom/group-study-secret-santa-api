@@ -74,7 +74,7 @@ router.get('/:userId/wishlist', authenticateToken, async (req, res) => {
 router.post('/add-wishlist/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
-        const { title, priority, links } = req.body;
+        const { title, priority, description, links } = req.body;
 
         const user = await User.findById(userId);
         if (!user) {
@@ -83,11 +83,12 @@ router.post('/add-wishlist/:userId', async (req, res) => {
 
         // Check if title and priority are not empty
         if (!title || !priority) {
-            return res.status(400).json({ message: 'Title and priority are required' });
+            return res.status(400).json({ message: 'Title, priority and description are required' });
         }
 
         const newWishlistItem = {
             title,
+            description,
             priority,
             links,
         };

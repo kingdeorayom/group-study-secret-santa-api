@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema({
             id: mongoose.Schema.Types.ObjectId,
             title: String,
             priority: String,
+            description: String,
             links: [String],
         },
     ],
