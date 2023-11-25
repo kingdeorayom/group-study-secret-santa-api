@@ -363,6 +363,37 @@ router.post('/change-password', authenticateToken, async (req, res) => {
     }
 });
 
+// Reset Password endpoint
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { codeName, newPassword, confirmPassword } = req.body;
+
+        // Fetch the user from the database
+        const user = await User.findOne({ codeName: codeName });
+
+        if (!user) {
+            return res.status(400).json({ message: 'There is no participant with this code name in the database. Please try again.' });
+        }
+
+        // Check if the new password matches the confirm password
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ message: 'New password and confirm password do not match.' });
+        }
+
+        // Hash the new password
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password in the database
+        user.password = hashedNewPassword;
+        await user.save();
+
+        res.json({ message: 'Password changed successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // Encryption function
 const encrypt = (text, key) => {
     const cipher = crypto.createCipher('aes-256-cbc', key);
