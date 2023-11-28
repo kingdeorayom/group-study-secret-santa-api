@@ -239,7 +239,7 @@ router.post('/register', async (req, res) => {
     try {
         // Check the total number of registered users
         const totalUsers = await User.countDocuments();
-        if (totalUsers >= 15) {
+        if (totalUsers >= 10) {
             return res.status(400).json({ message: 'Registration is closed. Maximum participants reached.' });
         }
 
